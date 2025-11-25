@@ -1,0 +1,64 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-table-order_item
+      author: polina_tr
+
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+           - tableExists:
+               tableName: order_item
+
+
+      changes:
+        - createTable:
+            tableName: order_item
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+              - column:
+                  name: order_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: item_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: quantity
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: timestamp
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: lastUpdated_at
+                  type: timestamp
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+
+        - addForeignKeyConstraint:
+            baseColumnNames: order_id
+            baseTableName: order_item
+            referencedColumnNames: id
+            referencedTableName: orders
+            constraintName: fk_orders_itemOrder
+
+        - addForeignKeyConstraint:
+            baseColumnNames: item_id
+            baseTableName: order_item
+            referencedColumnNames: id
+            referencedTableName: items
+            constraintName: fk_item_itemOrder
