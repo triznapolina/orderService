@@ -27,7 +27,7 @@ public interface OrderService {
 
     List<Order> findAllOrdersByUserWithStatus(String active,long id);
 
-    Optional<Order> getOrderById (long id);
+    Order getOrderById (long id);
 
     Page<Order> getOrdersOnPage(int pageNo, int pageSize);
 

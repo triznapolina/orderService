@@ -84,9 +84,9 @@ public class OrderController {
 
 
     @GetMapping("/{orderId}")
-    public ResponseEntity<Optional<Order>> getOrderById(@PathVariable Long orderId) {
+    public ResponseEntity<Order> getOrderById(@PathVariable Long orderId) {
 
-        Optional<Order> order = orderService.getOrderById(orderId);
+        Order order = orderService.getOrderById(orderId);
         return ResponseEntity.ok(order);
 
     }
