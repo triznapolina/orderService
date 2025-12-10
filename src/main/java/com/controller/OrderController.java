@@ -29,8 +29,8 @@ public class OrderController {
     }
 
 
-    @GetMapping("/{email}")
-    public UserDto getUserById(@PathVariable String email) {
+    @GetMapping("/email/{email}")
+    public UserDto getUserByEmail(@PathVariable String email) {
         return userService.getUserInfoByEmail(email);
     }
 

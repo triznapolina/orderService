@@ -18,7 +18,7 @@ public class UserService {
     @CircuitBreaker(name = "userService", fallbackMethod = "fallBackGetUserByEmail")
     public UserDto getUserInfoByEmail(String email) {
 
-        String userServiceUrl = "http://localhost:8080/email/" + email;
+        String userServiceUrl = "http://localhost:8080/app/users/email/" + email;
         return restTemplate.getForObject(userServiceUrl, UserDto.class);
     }
 

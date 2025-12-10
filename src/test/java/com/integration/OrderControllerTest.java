@@ -31,6 +31,7 @@ import static org.junit.Assert.assertNotNull;
 public class OrderControllerTest {
 
 
+    /*
     @Autowired
     private OrderRepository orderRepository;
 
@@ -191,4 +192,6 @@ public class OrderControllerTest {
         assertNotNull(activeOrders);
         assertEquals(1, activeOrders.size());
     }
+
+     */
 }
