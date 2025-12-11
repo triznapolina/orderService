@@ -11,15 +11,11 @@ import java.util.Optional;
 
 public interface OrderService {
 
-
-
     Order createOrder (OrderDto order, Long id);
 
     Order updateOrder (OrderDto order, Long id);
 
     void deleteOrder(boolean status, long orderId);
-
-    List<Order> findAllActiveOrders ();
 
     List<Order> findAllByStatus (String status);
 
@@ -32,4 +28,5 @@ public interface OrderService {
     Page<Order> getOrdersOnPage(int pageNo, int pageSize);
 
     Page<Order> filterOrders(String status, LocalDateTime createdAt, Pageable pageable);
+
 }

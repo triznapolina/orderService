@@ -30,4 +30,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
 
     Page<Order> findAll(Specification<Order> spec, Pageable pageable);
+
+    Order getOrderById(long id);
 }
