@@ -50,12 +50,7 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new EntityNotFoundException("Order with id= "+ id + " is not found"));
 
         orderRes.setTotalPrice(order.getTotalPrice());
-        orderRes.setStatus(order.getStatus());
-        orderRes.setUserId(id);
-        orderRes.setDeleted(false);
         orderRes.setStatus("updated");
-
-
         return orderRepository.save(orderRes);
     }
 
