@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 import static com.specification.OrderSpecification.hasStatus;
 import static com.specification.OrderSpecification.hasCreationDate;
@@ -23,7 +22,7 @@ import static com.specification.OrderSpecification.hasCreationDate;
 @Service
 public class OrderServiceImpl implements OrderService {
 
-   private final OrderRepository orderRepository;
+    private final OrderRepository orderRepository;
     private final OrderMapper orderMapper;
 
     public OrderServiceImpl(OrderRepository orderRepository, OrderMapper orderMapper) {
@@ -51,7 +50,6 @@ public class OrderServiceImpl implements OrderService {
 
         orderRes.setTotalPrice(order.getTotalPrice());
         orderRes.setStatus(order.getStatus());
-        orderRes.setUserId(id);
         orderRes.setDeleted(false);
         orderRes.setStatus("updated");
 

@@ -7,18 +7,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 @Service
-public class UserService {
+public class UserServiceClient {
 
     private final RestTemplate restTemplate;
 
-    public UserService(RestTemplate restTemplate) {
+    public UserServiceClient(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
 
     @CircuitBreaker(name = "userService", fallbackMethod = "fallBackGetUserByEmail")
     public UserDto getUserInfoByEmail(String email) {
 
-        String userServiceUrl = "http://localhost:8080/app/users/email/" + email;
+        String userServiceUrl = "http://localhost:8080/email/" + email;
         return restTemplate.getForObject(userServiceUrl, UserDto.class);
     }
 
