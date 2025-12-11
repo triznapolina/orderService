@@ -19,8 +19,6 @@ public interface OrderService {
 
     void deleteOrder(boolean status, long orderId);
 
-    List<Order> findAllActiveOrders ();
-
     List<Order> findAllByStatus (String status);
 
     List<Order> findAllOrdersByUser (long id);

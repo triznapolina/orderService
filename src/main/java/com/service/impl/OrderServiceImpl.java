@@ -64,12 +64,7 @@ public class OrderServiceImpl implements OrderService {
         orderRepository.setDeletedStatus(status, orderId);
     }
 
-    @Override
-    public List<Order> findAllActiveOrders() {
-        return orderRepository.findAllActiveOrders();
-    }
-
-    @Override
+       @Override
     public List<Order> findAllByStatus(String status) {
         return orderRepository.findByStatus(status);
     }
