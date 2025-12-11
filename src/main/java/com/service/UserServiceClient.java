@@ -3,10 +3,13 @@ package com.service;
 
 import com.dto.UserDto;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+
 @Service
+@Slf4j
 public class UserServiceClient {
 
     private final RestTemplate restTemplate;
@@ -23,7 +26,7 @@ public class UserServiceClient {
     }
 
     public UserDto fallBackGetUserByEmail(String email, Throwable throwable) {
-        System.out.println("User service is currently unavailable. Please try again later.");
+        log.error("User service is currently unavailable. Please try again later.");
         return null;
     }
 

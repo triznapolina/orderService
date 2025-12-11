@@ -17,15 +17,13 @@ public interface OrderService {
 
     void deleteOrder(boolean status, long orderId);
 
-    List<Order> findAllActiveOrders ();
-
     List<Order> findAllByStatus (String status);
 
     List<Order> findAllOrdersByUser (long id);
 
     List<Order> findAllOrdersByUserWithStatus(String active,long id);
 
-    Order getOrderById (long id);
+    Optional<Order> getOrderById (long id);
 
     Page<Order> getOrdersOnPage(int pageNo, int pageSize);
 

@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static com.specification.OrderSpecification.hasStatus;
 import static com.specification.OrderSpecification.hasCreationDate;
@@ -22,7 +23,7 @@ import static com.specification.OrderSpecification.hasCreationDate;
 @Service
 public class OrderServiceImpl implements OrderService {
 
-    private final OrderRepository orderRepository;
+   private final OrderRepository orderRepository;
     private final OrderMapper orderMapper;
 
     public OrderServiceImpl(OrderRepository orderRepository, OrderMapper orderMapper) {
@@ -49,11 +50,7 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new EntityNotFoundException("Order with id= "+ id + " is not found"));
 
         orderRes.setTotalPrice(order.getTotalPrice());
-        orderRes.setStatus(order.getStatus());
-        orderRes.setDeleted(false);
         orderRes.setStatus("updated");
-
-
         return orderRepository.save(orderRes);
     }
 
@@ -62,12 +59,7 @@ public class OrderServiceImpl implements OrderService {
         orderRepository.setDeletedStatus(status, orderId);
     }
 
-    @Override
-    public List<Order> findAllActiveOrders() {
-        return orderRepository.findAllActiveOrders();
-    }
-
-    @Override
+       @Override
     public List<Order> findAllByStatus(String status) {
         return orderRepository.findByStatus(status);
     }
@@ -83,8 +75,8 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public Order getOrderById(long id) {
-        return orderRepository.getOrderById(id);
+    public Optional<Order> getOrderById(long id) {
+        return orderRepository.findById(id);
     }
 
     @Override
