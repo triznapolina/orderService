@@ -1,6 +1,7 @@
 package com.integration;
 
 import com.dto.OrderDto;
+import com.entity.Order;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.repository.OrderRepository;
@@ -30,8 +31,6 @@ import static org.junit.Assert.assertNotNull;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class OrderControllerTest {
 
-
-    /*
     @Autowired
     private OrderRepository orderRepository;
 
@@ -193,5 +192,5 @@ public class OrderControllerTest {
         assertEquals(1, activeOrders.size());
     }
 
-     */
+
 }
