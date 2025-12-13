@@ -1,196 +1,168 @@
 package com.integration;
 
 import com.dto.OrderDto;
+import com.dto.UserOrdersResponse;
 import com.entity.Order;
 import com.github.tomakehurst.wiremock.WireMockServer;
-import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
-import com.repository.OrderRepository;
-import io.restassured.RestAssured;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
+import com.service.OrderService;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.http.HttpStatus;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.http.*;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.utility.DockerImageName;
-
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import org.wiremock.spring.EnableWireMock;
 
 
-@Testcontainers
+import java.math.BigDecimal;
+
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+
+
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class OrderControllerTest {
+@EnableWireMock
+@Testcontainers
+class OrderControllerTest {
 
     @Autowired
-    private OrderRepository orderRepository;
+    private TestRestTemplate restTemplate;
 
-
-    @LocalServerPort
-    private Integer port;
+    @Autowired
+    private OrderService orderService;
 
     @Container
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(
-            DockerImageName.parse("postgres:16"))
+    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16")
             .withDatabaseName("ordersDB")
             .withUsername("postgres")
             .withPassword("root");
 
-
-    private static WireMockServer wireMockServer;
-
     @DynamicPropertySource
-    static void registerPgProperties(DynamicPropertyRegistry registry) {
+    static void overrideProps(DynamicPropertyRegistry registry) {
         registry.add("spring.datasource.url", postgres::getJdbcUrl);
         registry.add("spring.datasource.username", postgres::getUsername);
         registry.add("spring.datasource.password", postgres::getPassword);
 
-        registry.add("photos.api.base-url", () -> "http://localhost:" + wireMockServer.port());
+        registry.add("external.user-service.url", () -> wireMockServer.baseUrl());
     }
 
-    @BeforeAll
-    static void setupGlobal() {
-        RestAssured.baseURI = "http://localhost";
+    @Value("${wiremock.server.baseUrl}")
+    private String wireMockUrl;
 
-        wireMockServer = new WireMockServer(WireMockConfiguration.options().dynamicPort());
-        wireMockServer.start();
+    static WireMockServer wireMockServer = new WireMockServer();
+
+
+    private void stubUserServiceGetUserInfo(String email) {
+        wireMockServer.stubFor(get(urlPathEqualTo("/email/"))
+                .withQueryParam("email", equalTo(email))
+                .willReturn(okJson("""
+                {
+                  "id": 4,
+                   "email": "alice.w@gmail.com",
+                   "first_name": "Alice",
+                   "surname": "Williams"
+                }
+                """.formatted(email))));
     }
 
-    @AfterAll
-    static void tearDownGlobal() {
-        if (wireMockServer != null) {
-            wireMockServer.stop();
+
+        private HttpHeaders headersWithAuth() {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.add("Authorization", "Bearer " +
+                    "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoiVVNFUiIsImlkIjozLCJzdWIiOiJwb2xpbmFAZ21haWwuY29tIiwiaWF0IjoxNzY1NTYxNTA2LCJleHAiOjE3NjU1OTc1MDZ9.7bDdutVaJ0aGuuNjrcckH2pFptMhX8-po4xTyOwDUUZwK28OEC0Q4wJU4Ks44apG");
+            return headers;
         }
+
+
+        @Test
+        void testCreateOrder() {
+            // Arrange
+            stubUserServiceGetUserInfo("alice.w@gmail.com");
+
+            OrderDto dto = new OrderDto( );
+            dto.setId(1L);
+            dto.setTotalPrice(BigDecimal.valueOf(115.20));
+            dto.setStatus("created");
+
+
+            HttpEntity<OrderDto> request = new HttpEntity<>(dto, headersWithAuth());
+
+            // Act
+            ResponseEntity<UserOrdersResponse> response = restTemplate.postForEntity(
+                    "/app/order", request, UserOrdersResponse.class);
+
+            // Assert
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        }
+
+        @Test
+        void testDeleteOrder() {
+            // Arrange
+            HttpHeaders headers = headersWithAuth();
+            HttpEntity<Void> request = new HttpEntity<>(headers);
+
+            OrderDto dto = new OrderDto();
+
+
+            boolean status = true;
+
+            // Act
+            ResponseEntity<Void> response = restTemplate.exchange(
+                    "/app/order/{orderId}/status/{status}",
+                    HttpMethod.DELETE,
+                    request,
+                    Void.class,
+                    dto.getId(), status);
+
+            // Assert
+            Assertions.assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+        }
+
+        @Test
+        void testUpdateOrder() {
+            // Arrange
+            stubUserServiceGetUserInfo("alice.w@gmail.com");
+            Long orderId = 123L;
+            OrderDto dto = new OrderDto();
+
+            HttpEntity<OrderDto> request = new HttpEntity<>(dto, headersWithAuth());
+
+            // Act
+            ResponseEntity<UserOrdersResponse> response = restTemplate.exchange(
+                    "/app/order/{orderId}",
+                    HttpMethod.PUT,
+                    request,
+                    UserOrdersResponse.class,
+                    orderId);
+
+            // Assert
+            Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+            Assertions.assertNotNull(response.getBody());
+        }
+
+        @Test
+        void testFindAllOrdersByMe() {
+            // Arrange
+            HttpHeaders headers = headersWithAuth();
+            HttpEntity<Void> request = new HttpEntity<>(headers);
+
+            // Act
+            ResponseEntity<Order[]> response = restTemplate.exchange(
+                    "/app/order/me",
+                    HttpMethod.GET,
+                    request,
+                    Order[].class);
+
+            // Assert
+            Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+            Assertions.assertNotNull(response.getBody());
+        }
+
     }
-
-    @BeforeEach
-    void setUpRestAssured() {
-        RestAssured.port = port;
-        orderRepository.deleteAll();
-
-        wireMockServer.resetRequests();
-        wireMockServer.resetMappings();
-    }
-
-    @Test
-    void createOrderTest() throws Exception {
-        Long userId = 1L;
-        OrderDto orderDto = new OrderDto();
-
-        wireMockServer.stubFor(get(urlEqualTo("/users/" + userId))
-                .willReturn(aResponse()
-                        .withStatus(HttpStatus.OK.value())
-                        .withHeader("Content-Type", "application/json")
-                        .withBody("{\"id\": " + userId + ", \"name\": \"Mocked User\"}")));
-
-        String responseBody = given()
-                .when()
-                .post("/users/{userId}", userId)
-                .then()
-                .statusCode(HttpStatus.CREATED.value())
-                .extract().body().asString();
-
-        Order createdOrder = objectMapper.readValue(responseBody, Order.class);
-        assertNotNull(createdOrder.getId());
-        assertTrue(orderRepository.findById(createdOrder.getId()).isPresent());
-    }
-
-    @Test
-    void updateOrderTest() throws Exception {
-        Long userId = 2L;
-        Order existingOrder = new Order();
-        existingOrder = orderRepository.save(existingOrder);
-
-        OrderDto updateDto = new OrderDto();
-
-        given()
-                .contentType(ContentType.JSON)
-                .body(objectMapper.writeValueAsString(updateDto))
-                .when()
-                .put("/{orderId}", existingOrder.getId())
-                .then()
-                .statusCode(HttpStatus.OK.value())
-                .extract().body().asString();
-
-        Order updatedOrderInDb = orderRepository.findById(existingOrder.getId()).orElseThrow();
-        assertEquals("updated", updatedOrderInDb.getStatus());
-    }
-
-    @Test
-    void deleteOrderTest() {
-        Long userId = 3L;
-        Order existingOrder = new Order();
-        existingOrder = orderRepository.save(existingOrder);
-
-        given()
-                .when()
-                .delete("/{orderId}/status/{status}", existingOrder.getId(), true)
-                .then()
-                .statusCode(HttpStatus.NO_CONTENT.value());
-
-        Order deletedOrderInDb = orderRepository.findById(existingOrder.getId()).orElseThrow();
-        assertTrue(deletedOrderInDb.getDeleted());
-    }
-
-    @Test
-    void findAllOrdersByUserTest() throws Exception {
-        Long targetUserId = 4L;
-
-        wireMockServer.stubFor(get(urlEqualTo("/users/" + targetUserId))
-                .willReturn(aResponse()
-                        .withStatus(HttpStatus.OK.value())
-                        .withHeader("Content-Type", "application/json")
-                        .withBody("{\"id\": " + targetUserId + ", \"name\": \"Target User Mocked\"}")));
-
-        Order firstOrder = new Order();
-        firstOrder.setUserId(targetUserId);
-        orderRepository.save(firstOrder);
-
-        String responseBody = given()
-                .when()
-                .get("/users/{userId}", targetUserId)
-                .then()
-                .statusCode(HttpStatus.OK.value())
-                .extract().body().asString();
-
-        List<Order> orders = objectMapper.readValue(responseBody,
-                objectMapper.getTypeFactory().constructCollectionType(List.class, Order.class));
-
-        assertNotNull(orders);
-        assertEquals(2, orders.size());
-        assertEquals(targetUserId, orders.get(0).getUserId());
-    }
-
-
-    @Test
-    void findAllActiveOrdersTest() throws Exception {
-        Long userId = 7L;
-        Order firstOrder = new Order();
-        firstOrder.setUserId(userId);
-        orderRepository.save(firstOrder);
-
-        String responseBody = given()
-                .when()
-                .get("/active")
-                .then()
-                .statusCode(HttpStatus.OK.value())
-                .extract().body().asString();
-
-        List<Order> activeOrders = objectMapper.readValue(responseBody,
-                objectMapper.getTypeFactory().constructCollectionType(List.class, Order.class));
-
-        assertNotNull(activeOrders);
-        assertEquals(1, activeOrders.size());
-    }
-
-
-}
