@@ -1,0 +1,11 @@
+databaseChangeLog:
+
+  - include:
+      file: initial/changelog-create-orders.yaml
+      relativeToChangelogFile: true
+  - include:
+      file: initial/changelog-create-items.yaml
+      relativeToChangelogFile: true
+  - include:
+      file: initial/changelog-create-item_order.yaml
+      relativeToChangelogFile: true
