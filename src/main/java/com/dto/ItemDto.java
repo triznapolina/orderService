@@ -1,9 +1,8 @@
 package com.dto;
 
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.validation.constraints.*;
+import lombok.*;
 
 import java.math.BigDecimal;
 
@@ -12,8 +11,10 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 public class ItemDto {
 
+    @NotBlank(message = "Name must not be blank")
     private String name;
 
+    @NotNull(message = "Price must not be null")
+    @DecimalMin(value = "0.0", inclusive = false, message = "Price must be greater than 0")
     private BigDecimal price;
-
 }
