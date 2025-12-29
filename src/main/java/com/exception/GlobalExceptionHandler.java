@@ -31,5 +31,15 @@ public class GlobalExceptionHandler {
     }
 
 
+    @ExceptionHandler({
+            io.jsonwebtoken.ExpiredJwtException.class,
+            io.jsonwebtoken.MalformedJwtException.class,
+            io.jsonwebtoken.UnsupportedJwtException.class,
+            io.jsonwebtoken.SignatureException.class,
+            IllegalArgumentException.class
+    })
+    public ResponseEntity<String> handleJwtException(Exception ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("JWT Error: " + ex.getMessage());
+    }
 
 }
