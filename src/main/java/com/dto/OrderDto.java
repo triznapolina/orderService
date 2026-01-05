@@ -1,9 +1,8 @@
 package com.dto;
 
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.validation.constraints.*;
+import lombok.*;
 
 import java.math.BigDecimal;
 
@@ -15,8 +14,11 @@ public class OrderDto {
 
     private Long id;
 
+    @NotNull(message = "Total price must not be null")
+    @DecimalMin(value = "0.0", inclusive = false, message = "Total price must be greater than 0")
     private BigDecimal totalPrice;
 
+    @NotBlank(message = "Status must not be blank")
     private String status;
 
 

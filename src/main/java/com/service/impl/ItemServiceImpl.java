@@ -5,6 +5,7 @@ import com.entity.Item;
 import com.repository.ItemRepository;
 import com.service.ItemService;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +18,7 @@ public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
 
     @Override
+    @Transactional
     public Item createItem(ItemDto itemDto) {
         Item item = new Item();
         item.setName(itemDto.getName());
@@ -25,6 +27,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
+    @Transactional
     public Item updateItem(ItemDto itemDto, long idItem) {
 
         Item item = itemRepository.findById(idItem)
@@ -37,6 +40,7 @@ public class ItemServiceImpl implements ItemService {
 
 
     @Override
+    @Transactional
     public List<Item> getAllItems() {
         return itemRepository.findAll();
     }

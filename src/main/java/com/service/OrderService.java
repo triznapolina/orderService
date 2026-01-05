@@ -11,9 +11,11 @@ import java.util.Optional;
 
 public interface OrderService {
 
-    Order createOrder (OrderDto order, Long id);
 
-    Order updateOrder (OrderDto order, Long id);
+
+    OrderDto createOrder (OrderDto order, Long id);
+
+    OrderDto updateOrder (OrderDto order, Long id);
 
     void deleteOrder(boolean status, long orderId);
 

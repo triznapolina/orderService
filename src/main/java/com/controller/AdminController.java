@@ -34,8 +34,9 @@ public class AdminController {
 
 
     @GetMapping("/{email}")
-    public UserDto getUserByEmail(@PathVariable String email) {
-        return userService.getUserInfoByEmail(email);
+    public ResponseEntity<UserDto> getUserByEmail(@PathVariable String email) {
+        UserDto userDto = userService.getUserInfoByEmail(email);
+        return ResponseEntity.ok(userDto);
     }
 
 
