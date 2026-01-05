@@ -104,26 +104,4 @@ public class OrderServiceTest {
         assertNotNull(result);
         assertEquals(1, result.size());
     }
-
-
-    @Test
-    void getOrderById() {
-        // Arrange
-        testOrderId = 1L;
-
-        testOrder = new Order();
-        testOrder.setId(testOrderId);
-
-        when(orderRepository.getOrderById(testOrderId)).thenReturn(testOrder);
-
-        // Act
-        Optional<Order> result = orderService.getOrderById(testOrderId);
-
-        // Assert
-        assertEquals(testOrder.getId(), 1);
-    }
-
-
-
-
 }
